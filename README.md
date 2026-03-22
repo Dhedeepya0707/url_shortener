@@ -10,7 +10,7 @@ Modern UI: A dark-themed, glassmorphism-inspired interface for a premium user ex
 
 CORS Enabled: Seamless communication between the frontend and backend services.
 
-🛠️Tech Stack
+Tech Stack
 Backend: Java 21, Spring Boot 4.1.0 (Snapshot), Spring Data JPA.
 
 Database: MySQL 9.6.
