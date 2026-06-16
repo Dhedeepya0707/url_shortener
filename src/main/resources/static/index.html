@@ -4,15 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KeepItShort | Modern URL Shortener</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    
+    <meta name="description" content="Shorten your URLs instantly with KeepItShort - a fast, modern URL shortener.">
+    <link href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-dark: #050810;
+            --bg-card: rgba(15, 23, 42, 0.6);
             --accent-blue: #3b82f6;
-            --text-main: #ffffff;
+            --accent-purple: #8b5cf6;
+            --accent-cyan: #06b6d4;
+            --text-main: #f1f5f9;
             --text-dim: #94a3b8;
+            --text-muted: #64748b;
+            --border: rgba(255, 255, 255, 0.08);
+            --success: #10b981;
+            --error: #ef4444;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -21,216 +27,507 @@
             background-color: var(--bg-dark);
             color: var(--text-main);
             font-family: 'Inter', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             min-height: 100vh;
-            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             position: relative;
+            overflow-x: hidden;
         }
 
-        /* ATTRACTIVE BACKGROUND EFFECT */
-        body::before {
-            content: "";
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
-            top: 10%;
-            left: 10%;
-            z-index: -1;
-            animation: float 10s infinite alternate;
+        /* Animated gradient orbs */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            pointer-events: none;
+        }
+        .orb-1 {
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(59,130,246,0.15), transparent 70%);
+            top: -100px; left: -100px;
+            animation: orbFloat1 15s ease-in-out infinite;
+        }
+        .orb-2 {
+            width: 350px; height: 350px;
+            background: radial-gradient(circle, rgba(139,92,246,0.12), transparent 70%);
+            bottom: -50px; right: -50px;
+            animation: orbFloat2 18s ease-in-out infinite;
+        }
+        .orb-3 {
+            width: 250px; height: 250px;
+            background: radial-gradient(circle, rgba(6,182,212,0.1), transparent 70%);
+            top: 50%; left: 50%;
+            animation: orbFloat3 12s ease-in-out infinite;
         }
 
-        body::after {
-            content: "";
-            position: absolute;
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(147, 51, 234, 0.1) 0%, transparent 70%);
-            bottom: 10%;
-            right: 5%;
-            z-index: -1;
-            animation: float 12s infinite alternate-reverse;
+        @keyframes orbFloat1 {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(80px, 60px); }
         }
-
-        @keyframes float {
-            from { transform: translate(0, 0); }
-            to { transform: translate(50px, 100px); }
+        @keyframes orbFloat2 {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-60px, -80px); }
+        }
+        @keyframes orbFloat3 {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-30%, -70%) scale(1.2); }
         }
 
         .container {
-            text-align: center;
-            width: 100%;
-            max-width: 700px;
-            padding: 20px;
+            position: relative;
             z-index: 1;
+            width: 100%;
+            max-width: 720px;
+            padding: 60px 24px 40px;
+            text-align: center;
         }
 
-        /* LARGE, ATTRACTIVE LOGO */
+        /* Logo */
         .logo {
-            font-family: 'Lexend Deca', sans-serif; /* Stylish, rounded modern font */
-            font-size: 3.5rem; /* Significantly larger as requested */
-            margin-bottom: 40px;
-            background: linear-gradient(to bottom, #ffffff 30%, #3b82f6 100%);
+            font-family: 'Lexend Deca', sans-serif;
+            font-size: 3.2rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #ffffff 0%, #3b82f6 50%, #8b5cf6 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
             letter-spacing: -1.5px;
+            animation: logoShimmer 3s ease-in-out infinite;
         }
 
-        h1 {
-            font-size: 2.2rem;
-            font-weight: 600;
-            margin-bottom: 12px;
-            letter-spacing: -0.5px;
+        @keyframes logoShimmer {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.15); }
         }
 
-        .subcaption {
-            color: var(--text-dim);
+        .tagline {
             font-size: 1.1rem;
-            margin-bottom: 40px;
+            color: var(--text-dim);
+            margin-bottom: 48px;
+            font-weight: 400;
+            line-height: 1.6;
         }
 
-        /* INPUT AREA */
-        .input-wrapper {
-            background: rgba(30, 41, 59, 0.5);
+        .tagline span {
+            color: var(--accent-blue);
+            font-weight: 600;
+        }
+
+        /* Input Area */
+        .input-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
             padding: 8px;
-            border-radius: 16px;
+            backdrop-filter: blur(20px);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .input-card:focus-within {
+            border-color: rgba(59, 130, 246, 0.4);
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.08);
+        }
+
+        .input-row {
             display: flex;
             align-items: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            transition: border-color 0.3s;
+            gap: 8px;
         }
 
-        .input-wrapper:focus-within {
-            border-color: var(--accent-blue);
-        }
-
-        input {
+        .url-input {
             flex: 1;
             background: transparent;
             border: none;
-            color: white;
-            padding: 15px 20px;
+            color: var(--text-main);
+            padding: 16px 20px;
             font-size: 1rem;
+            font-family: 'Inter', sans-serif;
             outline: none;
         }
 
-        button#shortenBtn {
-            background: var(--accent-blue);
+        .url-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .shorten-btn {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
             color: white;
             border: none;
-            padding: 12px 28px;
-            border-radius: 12px;
+            padding: 14px 32px;
+            border-radius: 14px;
             cursor: pointer;
             font-weight: 600;
-            transition: opacity 0.2s;
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+            transition: transform 0.15s ease, box-shadow 0.3s ease;
+            white-space: nowrap;
         }
 
-        button#shortenBtn:hover {
-            opacity: 0.9;
+        .shorten-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
         }
 
-        /* RESULT SECTION */
-        .result-box {
-            margin-top: 30px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 12px;
+        .shorten-btn:active {
+            transform: translateY(0);
+        }
+
+        .shorten-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Result */
+        .result-card {
+            margin-top: 24px;
+            background: var(--bg-card);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(20px);
             display: none;
-            border: 1px dashed rgba(255, 255, 255, 0.2);
+            animation: slideUp 0.4s ease;
+        }
+
+        .result-card.show { display: block; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-label {
+            font-size: 0.8rem;
+            color: var(--success);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .result-url-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
         .result-link {
-            display: block;
-            margin-bottom: 15px;
             color: #60a5fa;
-            font-size: 1.3rem;
+            font-size: 1.25rem;
             text-decoration: none;
             font-weight: 600;
+            transition: color 0.2s;
+            word-break: break-all;
         }
 
+        .result-link:hover { color: #93c5fd; }
+
         .copy-btn {
-            background: transparent;
-            border: 1px solid #4b5563;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            padding: 8px 18px;
+            border-radius: 10px;
             cursor: pointer;
+            font-size: 0.85rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s ease;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+        }
+
+        .copy-btn.copied {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.3);
+            color: var(--success);
+        }
+
+        /* History */
+        .history-section {
+            margin-top: 48px;
+            text-align: left;
+        }
+
+        .history-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .history-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-dim);
+        }
+
+        .history-count {
             font-size: 0.8rem;
+            color: var(--text-muted);
+            background: rgba(255,255,255,0.05);
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .history-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            backdrop-filter: blur(10px);
+            transition: border-color 0.2s;
+        }
+
+        .history-item:hover {
+            border-color: rgba(59, 130, 246, 0.2);
+        }
+
+        .history-original {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 300px;
+        }
+
+        .history-short a {
+            color: #60a5fa;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .history-short a:hover { color: #93c5fd; }
+
+        .history-empty {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 32px;
+            font-size: 0.9rem;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(16, 185, 129, 0.9);
+            color: white;
+            padding: 12px 28px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Error styling */
+        .error-msg {
+            color: var(--error);
+            font-size: 0.85rem;
+            margin-top: 12px;
+            display: none;
+        }
+
+        .error-msg.show { display: block; }
+
+        /* Footer */
+        .footer {
+            margin-top: auto;
+            padding: 24px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            z-index: 1;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .logo { font-size: 2.4rem; }
+            .input-row { flex-direction: column; }
+            .shorten-btn { width: 100%; }
+            .history-item { flex-direction: column; align-items: flex-start; }
+            .history-original { max-width: 100%; }
         }
     </style>
 </head>
 <body>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
 
     <div class="container">
         <div class="logo">KeepItShort</div>
-        
-        <h1>Make space for what matters</h1>
-        <p class="subcaption">One click. One link. Infinite possibilities.</p>
+        <p class="tagline">Make space for what matters.<br>One click. One link. <span>Infinite possibilities.</span></p>
 
-        <div class="input-wrapper">
-            <input type="url" id="urlInput" placeholder="Paste your long link here..." required>
-            <button id="shortenBtn">Shorten Now!</button>
+        <div class="input-card">
+            <div class="input-row">
+                <input type="url" id="urlInput" class="url-input" placeholder="Paste your long link here..." required>
+                <button id="shortenBtn" class="shorten-btn">Shorten Now</button>
+            </div>
+        </div>
+        <p id="errorMsg" class="error-msg"></p>
+
+        <div id="resultCard" class="result-card">
+            <div class="result-label">&#10003; Your shortened link</div>
+            <div class="result-url-row">
+                <a href="#" id="shortLink" class="result-link" target="_blank"></a>
+                <button class="copy-btn" id="copyBtn">Copy</button>
+            </div>
         </div>
 
-        <div id="resultBox" class="result-box">
-            <a href="#" id="shortLink" class="result-link" target="_blank"></a>
-            <button class="copy-btn" id="copyBtn">Copy to clipboard</button>
+        <div class="history-section" id="historySection" style="display:none;">
+            <div class="history-header">
+                <span class="history-title">Recent Links</span>
+                <span class="history-count" id="historyCount">0 links</span>
+            </div>
+            <div class="history-list" id="historyList"></div>
         </div>
     </div>
+
+    <div class="footer">Built with Spring Boot &amp; H2 &mdash; KeepItShort</div>
+
+    <div class="toast" id="toast">Link copied to clipboard!</div>
 
 <script>
     const shortenBtn = document.getElementById('shortenBtn');
     const urlInput = document.getElementById('urlInput');
-    const resultBox = document.getElementById('resultBox');
+    const resultCard = document.getElementById('resultCard');
     const shortLink = document.getElementById('shortLink');
+    const errorMsg = document.getElementById('errorMsg');
+    const copyBtn = document.getElementById('copyBtn');
+    const toast = document.getElementById('toast');
+    const historySection = document.getElementById('historySection');
+    const historyList = document.getElementById('historyList');
+    const historyCount = document.getElementById('historyCount');
+
+    const BASE_URL = window.location.origin;
+
+    function showError(msg) {
+        errorMsg.textContent = msg;
+        errorMsg.classList.add('show');
+        setTimeout(() => errorMsg.classList.remove('show'), 4000);
+    }
+
+    function showToast(msg) {
+        toast.textContent = msg || 'Link copied to clipboard!';
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+
+    async function loadHistory() {
+        try {
+            const res = await fetch(BASE_URL + '/api/urls');
+            if (res.ok) {
+                const urls = await res.json();
+                if (urls.length === 0) {
+                    historySection.style.display = 'none';
+                    return;
+                }
+                historySection.style.display = 'block';
+                historyCount.textContent = urls.length + ' link' + (urls.length !== 1 ? 's' : '');
+                historyList.innerHTML = '';
+                urls.reverse().forEach(u => {
+                    const fullShort = BASE_URL + '/' + u.shortCode;
+                    const item = document.createElement('div');
+                    item.className = 'history-item';
+                    item.innerHTML =
+                        '<span class="history-original" title="' + u.originalUrl + '">' + u.originalUrl + '</span>' +
+                        '<span class="history-short"><a href="' + fullShort + '" target="_blank">' + fullShort + '</a></span>';
+                    historyList.appendChild(item);
+                });
+            }
+        } catch (e) {
+            // silently fail
+        }
+    }
 
     shortenBtn.addEventListener('click', async () => {
         const longUrl = urlInput.value.trim();
-
         if (!longUrl) {
-            alert("Please paste a URL first!");
+            showError('Please paste a URL first!');
             return;
         }
 
+        shortenBtn.disabled = true;
+        shortenBtn.textContent = 'Shortening...';
+        resultCard.classList.remove('show');
+        errorMsg.classList.remove('show');
+
         try {
-            // 1. Send data to your @PostMapping("/shorten")
-            const response = await fetch('http://localhost:9090/shorten', {
+            const response = await fetch(BASE_URL + '/shorten', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                // Matches the 'originalUrl' field in your Url.java entity
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ originalUrl: longUrl })
             });
 
             if (response.ok) {
                 const data = await response.json();
-                
-                // 2. data.shortCode comes from your Url.java/UrlController logic
-                const fullShortUrl = 'http://localhost:9090/' + data.shortCode;
-                
-                // 3. Update the UI
+                const fullShortUrl = BASE_URL + '/' + data.shortCode;
                 shortLink.innerText = fullShortUrl;
                 shortLink.href = fullShortUrl;
-                resultBox.style.display = 'block';
-                urlInput.value = ''; 
+                resultCard.classList.add('show');
+                urlInput.value = '';
+                copyBtn.textContent = 'Copy';
+                copyBtn.classList.remove('copied');
+                loadHistory();
             } else {
-                alert("Server error: " + response.status);
+                const err = await response.json().catch(() => null);
+                showError(err && err.error ? err.error : 'Server error: ' + response.status);
             }
         } catch (error) {
-            console.error("Connection Error:", error);
-            alert("Could not reach the backend. Make sure Spring Boot is running!");
+            showError('Cannot reach backend. Make sure Spring Boot is running!');
+        } finally {
+            shortenBtn.disabled = false;
+            shortenBtn.textContent = 'Shorten Now';
         }
     });
 
-    // Copy function
-    document.getElementById('copyBtn').addEventListener('click', () => {
-        navigator.clipboard.writeText(shortLink.innerText);
-        alert("Link copied!");
+    urlInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') shortenBtn.click();
     });
+
+    copyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(shortLink.innerText).then(() => {
+            copyBtn.textContent = 'Copied!';
+            copyBtn.classList.add('copied');
+            showToast();
+            setTimeout(() => {
+                copyBtn.textContent = 'Copy';
+                copyBtn.classList.remove('copied');
+            }, 2000);
+        });
+    });
+
+    // Load history on page load
+    loadHistory();
 </script>
 </body>
 </html>

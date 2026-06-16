@@ -1,4 +1,3 @@
-
 package com.example.urlshortener.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -6,59 +5,59 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
 import com.example.urlshortener.entity.Url;
-import com.example.urlshortener.repository.UrlRepository;
+import com.example.urlshortener.service.UrlService;
 
-import java.util.Random;
-@CrossOrigin(origins = "*") // Allows the frontend to talk to the backend
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+@CrossOrigin(origins = "*")
 @RestController
 public class UrlController {
 
     @Autowired
-    private UrlRepository urlRepository;
+    private UrlService urlService;
 
     // Endpoint to shorten a URL
     @PostMapping("/shorten")
-    public Url shortenUrl(@RequestBody Url url) {
+    public ResponseEntity<?> shortenUrl(@RequestBody Map<String, String> request) {
+        String originalUrl = request.get("originalUrl");
 
-        String shortCode = generateShortUrl();
-
-        // Ensure short code is unique
-        while (urlRepository.findByShortCode(shortCode) != null) {
-            shortCode = generateShortUrl();
+        if (originalUrl == null || originalUrl.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "URL is required"));
         }
 
-        url.setShortCode(shortCode);
+        // Add protocol if missing
+        if (!originalUrl.startsWith("http://") && !originalUrl.startsWith("https://")) {
+            originalUrl = "https://" + originalUrl;
+        }
 
-        return urlRepository.save(url);
+        Url url = urlService.shortenUrl(originalUrl);
+        return ResponseEntity.ok(url);
+    }
+
+    // Endpoint to get all shortened URLs
+    @GetMapping("/api/urls")
+    public List<Url> getAllUrls() {
+        return urlService.getAllUrls();
     }
 
     // Endpoint to redirect using short URL
     @GetMapping("/{shortCode}")
     public ResponseEntity<?> redirectToOriginal(@PathVariable String shortCode) {
+        // Skip non-shortcode paths
+        if (shortCode.equals("favicon.ico") || shortCode.equals("api")) {
+            return ResponseEntity.notFound().build();
+        }
 
-        Url url = urlRepository.findByShortCode(shortCode);
+        Optional<Url> url = urlService.getOriginalUrl(shortCode);
 
-        if (url != null) {
+        if (url.isPresent()) {
             return ResponseEntity.status(302)
-                    .header("Location", url.getOriginalUrl())
+                    .header("Location", url.get().getOriginalUrl())
                     .build();
         }
 
         return ResponseEntity.notFound().build();
     }
-
-    // Method to generate random 6-character short URL
-    private String generateShortUrl() {
-
-        String characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        StringBuilder shortUrl = new StringBuilder();
-        Random random = new Random();
-
-        for (int i = 0; i < 6; i++) {
-            shortUrl.append(characters.charAt(random.nextInt(characters.length())));
-        }
-
-        return shortUrl.toString();
-    }
 }
-
