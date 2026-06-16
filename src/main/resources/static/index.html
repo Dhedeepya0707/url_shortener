@@ -455,7 +455,7 @@
                 historyCount.textContent = urls.length + ' link' + (urls.length !== 1 ? 's' : '');
                 historyList.innerHTML = '';
                 urls.reverse().forEach(u => {
-                    const fullShort = BASE_URL + '/' + u.shortCode;
+                    const fullShort = BASE_URL + '/r/' + u.shortCode;
                     const item = document.createElement('div');
                     item.className = 'history-item';
                     item.innerHTML =
@@ -490,7 +490,7 @@
 
             if (response.ok) {
                 const data = await response.json();
-                const fullShortUrl = BASE_URL + '/' + data.shortCode;
+                const fullShortUrl = BASE_URL + '/r/' + data.shortCode;
                 shortLink.innerText = fullShortUrl;
                 shortLink.href = fullShortUrl;
                 resultCard.classList.add('show');
