@@ -43,7 +43,7 @@ public class UrlController {
     }
 
     // Endpoint to redirect using short URL
-    @GetMapping("/{shortCode}")
+    @GetMapping("/r/{shortCode}")
     public ResponseEntity<?> redirectToOriginal(@PathVariable String shortCode) {
         // Skip non-shortcode paths
         if (shortCode.equals("favicon.ico") || shortCode.equals("api")) {
