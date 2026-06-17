@@ -442,92 +442,170 @@
         setTimeout(() => toast.classList.remove('show'), 2000);
     }
 
-    async function loadHistory() {
-        try {
-            const res = await fetch(BASE_URL + '/api/urls');
-            if (res.ok) {
-                const urls = await res.json();
-                if (urls.length === 0) {
-                    historySection.style.display = 'none';
-                    return;
-                }
-                historySection.style.display = 'block';
-                historyCount.textContent = urls.length + ' link' + (urls.length !== 1 ? 's' : '');
-                historyList.innerHTML = '';
-                urls.reverse().forEach(u => {
-                    const fullShort = BASE_URL + '/r/' + u.shortCode;
-                    const item = document.createElement('div');
-                    item.className = 'history-item';
-                    item.innerHTML =
-                        '<span class="history-original" title="' + u.originalUrl + '">' + u.originalUrl + '</span>' +
-                        '<span class="history-short"><a href="' + fullShort + '" target="_blank">' + fullShort + '</a></span>';
-                    historyList.appendChild(item);
-                });
-            }
-        } catch (e) {
-            // silently fail
+    // ==========================
+    // Local Storage Functions
+    // ==========================
+
+    function saveToLocalHistory(originalUrl, shortUrl) {
+        let history = JSON.parse(localStorage.getItem("recentLinks")) || [];
+
+        // Avoid duplicates
+        history = history.filter(item => item.shortUrl !== shortUrl);
+
+        // Add newest link to the beginning
+        history.unshift({
+            originalUrl,
+            shortUrl
+        });
+
+        // Keep only latest 10 links
+        if (history.length > 10) {
+            history = history.slice(0, 10);
         }
+
+        localStorage.setItem("recentLinks", JSON.stringify(history));
+
+        loadLocalHistory();
     }
 
-    shortenBtn.addEventListener('click', async () => {
+    function loadLocalHistory() {
+        const history = JSON.parse(localStorage.getItem("recentLinks")) || [];
+
+        if (history.length === 0) {
+            historySection.style.display = "none";
+            return;
+        }
+
+        historySection.style.display = "block";
+        historyCount.textContent =
+            history.length +
+            " link" +
+            (history.length !== 1 ? "s" : "");
+
+        historyList.innerHTML = "";
+
+        history.forEach(item => {
+            const div = document.createElement("div");
+            div.className = "history-item";
+
+            div.innerHTML =
+                '<span class="history-original" title="' +
+                item.originalUrl +
+                '">' +
+                item.originalUrl +
+                "</span>" +
+                '<span class="history-short"><a href="' +
+                item.shortUrl +
+                '" target="_blank">' +
+                item.shortUrl +
+                "</a></span>";
+
+            historyList.appendChild(div);
+        });
+    }
+
+    // ==========================
+    // Shorten Button
+    // ==========================
+
+    shortenBtn.addEventListener("click", async () => {
         const longUrl = urlInput.value.trim();
+
         if (!longUrl) {
-            showError('Please paste a URL first!');
+            showError("Please paste a URL first!");
             return;
         }
 
         shortenBtn.disabled = true;
-        shortenBtn.textContent = 'Shortening...';
-        resultCard.classList.remove('show');
-        errorMsg.classList.remove('show');
+        shortenBtn.textContent = "Shortening...";
+        resultCard.classList.remove("show");
+        errorMsg.classList.remove("show");
 
         try {
-            const response = await fetch(BASE_URL + '/shorten', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ originalUrl: longUrl })
+            const response = await fetch(BASE_URL + "/shorten", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    originalUrl: longUrl
+                })
             });
 
             if (response.ok) {
                 const data = await response.json();
-                const fullShortUrl = BASE_URL + '/r/' + data.shortCode;
+
+                const fullShortUrl = BASE_URL + "/r/" + data.shortCode;
+
                 shortLink.innerText = fullShortUrl;
                 shortLink.href = fullShortUrl;
-                resultCard.classList.add('show');
-                urlInput.value = '';
-                copyBtn.textContent = 'Copy';
-                copyBtn.classList.remove('copied');
-                loadHistory();
+
+                resultCard.classList.add("show");
+
+                urlInput.value = "";
+
+                copyBtn.textContent = "Copy";
+                copyBtn.classList.remove("copied");
+
+                // Save only in THIS browser
+                saveToLocalHistory(longUrl, fullShortUrl);
+
             } else {
                 const err = await response.json().catch(() => null);
-                showError(err && err.error ? err.error : 'Server error: ' + response.status);
+
+                showError(
+                    err && err.error
+                        ? err.error
+                        : "Server error: " + response.status
+                );
             }
+
         } catch (error) {
-            showError('Cannot reach backend. Make sure Spring Boot is running!');
+            showError(
+                "Cannot reach backend. Make sure Spring Boot is running!"
+            );
         } finally {
             shortenBtn.disabled = false;
-            shortenBtn.textContent = 'Shorten Now';
+            shortenBtn.textContent = "Shorten Now";
         }
     });
 
-    urlInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') shortenBtn.click();
+    // ==========================
+    // Enter Key Support
+    // ==========================
+
+    urlInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            shortenBtn.click();
+        }
     });
 
-    copyBtn.addEventListener('click', () => {
+    // ==========================
+    // Copy Button
+    // ==========================
+
+    copyBtn.addEventListener("click", () => {
         navigator.clipboard.writeText(shortLink.innerText).then(() => {
-            copyBtn.textContent = 'Copied!';
-            copyBtn.classList.add('copied');
+
+            copyBtn.textContent = "Copied!";
+            copyBtn.classList.add("copied");
+
             showToast();
+
             setTimeout(() => {
-                copyBtn.textContent = 'Copy';
-                copyBtn.classList.remove('copied');
+                copyBtn.textContent = "Copy";
+                copyBtn.classList.remove("copied");
             }, 2000);
+
         });
     });
 
-    // Load history on page load
-    loadHistory();
+    // ==========================
+    // Load Browser History
+    // ==========================
+
+    loadLocalHistory();
+
 </script>
 </body>
 </html>

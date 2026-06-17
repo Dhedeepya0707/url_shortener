@@ -36,11 +36,6 @@ public class UrlController {
         return ResponseEntity.ok(url);
     }
 
-    // Endpoint to get all shortened URLs
-    @GetMapping("/api/urls")
-    public List<Url> getAllUrls() {
-        return urlService.getAllUrls();
-    }
 
     // Endpoint to redirect using short URL
     @GetMapping("/r/{shortCode}")

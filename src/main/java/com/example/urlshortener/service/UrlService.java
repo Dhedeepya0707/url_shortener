@@ -40,7 +40,4 @@ public class UrlService {
         return Optional.ofNullable(urlRepository.findByShortCode(shortCode));
     }
 
-    public List<Url> getAllUrls() {
-        return urlRepository.findAll();
-    }
 }
